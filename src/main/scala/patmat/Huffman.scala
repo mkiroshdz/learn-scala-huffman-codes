@@ -21,7 +21,11 @@ case class Leaf(char: Char, weight: Int) extends CodeTree
 trait Huffman extends HuffmanInterface:
 
   // Part 1: Basics
-  def weight(tree: CodeTree): Int = tree.weight
+  def weight(tree: CodeTree): Int =
+    tree match
+    case Fork(l, r, chrs, w) => w
+    case Leaf(c, w) => w
+
   def chars(tree: CodeTree): List[Char] = 
     tree match 
     case Fork(l, r, chars, w) => chars
@@ -65,26 +69,26 @@ trait Huffman extends HuffmanInterface:
    *       println("integer is  : "+ theInt)
    *   }
    */
-def times(chars: List[Char]): List[(Char, Int)] =
-  def count(chars: List[Char], acc: List[(Char, Int)]) : List[(Char, Int)] = 
-    if(chars.isEmpty) { acc }
-    else {
-      val c = chars.head
-      val split = acc.span(x => x(0) != c)
-      val pfx = split(0)
-      val sfx = split(1)
-
-      if (sfx.isEmpty) { count(chars.tail, (c, 1) :: acc) } 
+  def times(chars: List[Char]): List[(Char, Int)] =
+    def count(chars: List[Char], acc: List[(Char, Int)]) : List[(Char, Int)] = 
+      if(chars.isEmpty) { acc }
       else {
-        count(
-          chars.tail, 
-          pfx ::: ((c, sfx.head(1) + 1) :: sfx.tail)
-        )
+        val c = chars.head
+        val split = acc.span(x => x(0) != c)
+        val pfx = split(0)
+        val sfx = split(1)
+
+        if (sfx.isEmpty) { count(chars.tail, (c, 1) :: acc) } 
+        else {
+          count(
+            chars.tail, 
+            pfx ::: ((c, sfx.head(1) + 1) :: sfx.tail)
+          )
+        }
       }
-    }
-  
-  val acc =  List[(Char, Int)]()
-  count(chars, acc)
+    
+    val acc =  List[(Char, Int)]()
+    count(chars, acc)
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -93,12 +97,13 @@ def times(chars: List[Char]): List[(Char, Int)] =
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
-
+  def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
+    val sorted = freqs.sortWith((a, b) => a(1) < b(1))
+    sorted.map(x => Leaf(x(0), x(1)))
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-  def singleton(trees: List[CodeTree]): Boolean = ???
+  def singleton(trees: List[CodeTree]): Boolean = trees.length == 1
 
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -113,7 +118,9 @@ def times(chars: List[Char]): List[(Char, Int)] =
    * unchanged.
    */
   def combine(trees: List[CodeTree]): List[CodeTree] = ???
-
+    // if(singleton(trees)) {
+    //   trees
+    // } 
   /**
    * This function will be called in the following way:
    *
