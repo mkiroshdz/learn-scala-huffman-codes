@@ -202,15 +202,31 @@ trait Huffman extends HuffmanInterface:
    */
   def decodedSecret: List[Char] = decode(frenchCode, secret)
 
-
   // Part 4a: Encoding using Huffman tree
 
   /**
    * This function encodes `text` using the code tree `tree`
    * into a sequence of bits.
    */
-  def encode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+  def encode(tree: CodeTree)(text: List[Char]): List[Bit] =
+    def encodeChar(char: Char, tree: CodeTree, bits: List[Bit]): List[Bit] = 
+      tree match
+      case Leaf(c, w) => bits
+      case Fork(l, r, chrs, w) => {
+        val leftChars = l match 
+        case Leaf(c, w) => List(c)
+        case Fork(l, r, chrs, w) => chrs
 
+        if leftChars.contains(char)
+        then encodeChar(char, l, 0 :: bits)
+        else encodeChar(char, r, 1 :: bits)
+      }
+
+    def encodeString(chars: List[Char], tree: CodeTree, bits: List[Bit]): List[Bit] =
+      if(chars.isEmpty) { bits }
+      else { encodeChar(chars.head, tree, bits) ::: encodeString(chars.tail, tree, bits) }
+
+    encodeString(text, tree, List[Bit]())
   // Part 4b: Encoding using code table
 
   type CodeTable = List[(Char, List[Bit])]
