@@ -117,10 +117,23 @@ trait Huffman extends HuffmanInterface:
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-  def combine(trees: List[CodeTree]): List[CodeTree] = ???
-    // if(singleton(trees)) {
-    //   trees
-    // } 
+  def combine(trees: List[CodeTree]): List[CodeTree] =
+    def insertInOrder(tree: CodeTree, trees: List[CodeTree]) : List[CodeTree] =
+      val split = trees.span(e => weight(e) <= weight(tree))
+      val pfx = split(0)
+      val sfx = split(1)
+      pfx ::: (tree :: sfx)
+
+    if(trees.isEmpty) { List[CodeTree]() }
+    else if(singleton(trees)) { trees } 
+    else {
+      val l = trees.head
+      val r = trees.tail.head
+      insertInOrder(
+        Fork(l, r, chars(l) ::: chars(r), weight(l) + weight(r)), 
+        trees.tail.tail
+      )
+    }
   /**
    * This function will be called in the following way:
    *
@@ -132,7 +145,9 @@ trait Huffman extends HuffmanInterface:
    * In such an invocation, `until` should call the two functions until the list of
    * code trees contains only one single tree, and then return that singleton list.
    */
-  def until(done: List[CodeTree] => Boolean, merge: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] = ???
+  def until(done: List[CodeTree] => Boolean, merge: List[CodeTree] => List[CodeTree])(trees: List[CodeTree]): List[CodeTree] =
+    if(done(trees)) { trees } 
+    else { until(done, merge)(merge(trees)) }
 
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
@@ -141,6 +156,7 @@ trait Huffman extends HuffmanInterface:
    * frequencies from that text and creates a code tree based on them.
    */
   def createCodeTree(chars: List[Char]): CodeTree = ???
+
 
 
   // Part 3: Decoding
