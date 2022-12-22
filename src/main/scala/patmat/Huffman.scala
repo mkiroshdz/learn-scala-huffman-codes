@@ -21,9 +21,11 @@ case class Leaf(char: Char, weight: Int) extends CodeTree
 trait Huffman extends HuffmanInterface:
 
   // Part 1: Basics
-  def weight(tree: CodeTree): Int = ??? // tree match ...
-
-  def chars(tree: CodeTree): List[Char] = ??? // tree match ...
+  def weight(tree: CodeTree): Int = tree.weight
+  def chars(tree: CodeTree): List[Char] = 
+    tree match 
+    case Fork(l, r, chars, w) => chars
+    case Leaf(c, w) => List(c)
 
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
@@ -35,7 +37,6 @@ trait Huffman extends HuffmanInterface:
    * you to easily create a character list from a given string.
    */
   def string2Chars(str: String): List[Char] = str.toList
-
   /**
    * This function computes for each unique character in the list `chars` the number of
    * times it occurs. For example, the invocation
@@ -64,7 +65,26 @@ trait Huffman extends HuffmanInterface:
    *       println("integer is  : "+ theInt)
    *   }
    */
-  def times(chars: List[Char]): List[(Char, Int)] = ???
+def times(chars: List[Char]): List[(Char, Int)] =
+  def count(chars: List[Char], acc: List[(Char, Int)]) : List[(Char, Int)] = 
+    if(chars.isEmpty) { acc }
+    else {
+      val c = chars.head
+      val split = acc.span(x => x(0) != c)
+      val pfx = split(0)
+      val sfx = split(1)
+
+      if (sfx.isEmpty) { count(chars.tail, (c, 1) :: acc) } 
+      else {
+        count(
+          chars.tail, 
+          pfx ::: ((c, sfx.head(1) + 1) :: sfx.tail)
+        )
+      }
+    }
+  
+  val acc =  List[(Char, Int)]()
+  count(chars, acc)
 
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
